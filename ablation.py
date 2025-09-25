@@ -1,0 +1,253 @@
+import torch
+import numpy as np
+import random
+from environment import (GoToLocalMissionEnv, 
+                         GoToOpenMissionEnv, 
+                         GoToObjDoorMissionEnv,  
+                         PickupDistMissionEnv,
+                         OpenDoorMissionEnv, 
+                         OpenDoorLocMissionEnv,
+                         OpenTwoDoorsMissionEnv,
+                         OpenDoorsOrderMissionEnv,
+                         ActionObjDoorMissionEnv)
+from sampler_lang import BabyAIMissionTaskWrapper, MissionEncoder, MissionParamAdapter
+import sampler_lang as SL
+from maml_rl.policies.categorical_mlp import CategoricalMLPPolicy
+import pickle
+import time
+from maml_rl.utils.reinforcement_learning import reinforce_loss
+from maml_rl.episode import BatchEpisodes
+from maml_rl.baseline import LinearFeatureBaseline
+
+seed = 42
+random.seed(seed)
+np.random.seed(seed)
+torch.manual_seed(seed)
+if torch.cuda.is_available():
+    torch.cuda.manual_seed_all(seed)
+
+
+start_time = time.time()
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+OBJECTS = ['box']
+COLORS = ['red', 'green', 'blue', 'purple','yellow', 'grey']
+DOOR_COLORS = ['yellow', 'grey']
+
+PICKUP_MISSIONS = [f"pick up the {color} {obj}" for color in COLORS for obj in OBJECTS]
+LOCAL_MISSIONS = [f"go to the {color} {obj}" for color in COLORS for obj in OBJECTS]
+DOOR_MISSIONS = [f"go to the {color} door" for color in DOOR_COLORS]
+OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in DOOR_COLORS]
+
+room_size=9
+num_dists=1
+max_steps=300
+
+model = "GoToOpen_8_12_600"  
+delta_theta = 0.7
+num_batches = 50
+
+# # GoToLocal
+# base_env = GoToLocalMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
+# missions=LOCAL_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {LOCAL_MISSIONS}\n ")
+
+
+# # Pickup
+# base_env = PickupDistMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
+# missions=PICKUP_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
+
+
+# GoToObjDoor
+base_env = GoToObjDoorMissionEnv(max_steps=max_steps, num_distractors=num_dists)
+missions=LOCAL_MISSIONS + DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
+
+
+# # OpenDoorMissionEnv
+# base_env = OpenDoorMissionEnv(room_size=room_size, max_steps=max_steps)
+# missions = OPEN_DOOR_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+
+
+print(f"env name {base_env} \n model used: {model}\n")
+
+# restore saved lang-adapted policy 
+
+ckpt = torch.load(f"lang_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
+with open(f"lang_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl", "rb") as f:
+    vectorizer = pickle.load(f)
+
+
+SL.vectorizer = vectorizer  
+mission_encoder_output_dim = 32
+SL.mission_encoder = MissionEncoder(len(SL.vectorizer.get_feature_names_out()), 32, 64, mission_encoder_output_dim).to(device)
+SL.mission_encoder.load_state_dict(ckpt["mission_encoder"])
+SL.mission_encoder.eval()
+mission_encoder = SL.mission_encoder
+preprocess_obs = SL.preprocess_obs
+
+dummy_obs, _ = env.reset()
+input_size = preprocess_obs(dummy_obs).shape[0]
+output_size = base_env.action_space.n
+hidden_sizes = (64, 64)
+nonlinearity = torch.nn.functional.tanh
+
+# Policy language
+policy_lang = CategoricalMLPPolicy(
+    input_size=input_size,
+    output_size=output_size,
+    hidden_sizes=hidden_sizes,
+    nonlinearity=nonlinearity,
+).to(device)  
+policy_lang.load_state_dict(ckpt["policy"])
+policy_lang.eval()
+policy_param_shapes = [p.shape for p in policy_lang.parameters()]
+
+# Adapter
+mission_adapter = MissionParamAdapter(mission_encoder_output_dim, policy_param_shapes).to(device)
+mission_adapter.load_state_dict(ckpt["mission_adapter"])    
+mission_adapter.eval()
+
+
+# restore saved ablation 
+
+ckpt_2 = torch.load(f"ablation_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
+with open(f"ablation_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl", "rb") as g:
+    vectorizer_2 = pickle.load(g)
+
+
+SL.vectorizer = vectorizer_2  
+mission_encoder_output_dim = 32
+SL.mission_encoder = MissionEncoder(len(SL.vectorizer.get_feature_names_out()), 32, 64, mission_encoder_output_dim).to(device)
+SL.mission_encoder.load_state_dict(ckpt_2["mission_encoder"])
+SL.mission_encoder.eval()
+mission_encoder_2 = SL.mission_encoder
+preprocess_obs = SL.preprocess_obs
+
+dummy_obs, _ = env.reset()
+input_size = preprocess_obs(dummy_obs).shape[0]
+output_size = base_env.action_space.n
+hidden_sizes = (64, 64)
+nonlinearity = torch.nn.functional.tanh
+
+# Policy unadapted language
+policy_unadapted_lang = CategoricalMLPPolicy(
+    input_size=input_size,
+    output_size=output_size,
+    hidden_sizes=hidden_sizes,
+    nonlinearity=nonlinearity,
+).to(device)  
+
+# Adapter
+policy_unadapted_lang.load_state_dict(ckpt_2["policy"])
+policy_unadapted_lang.eval()
+
+policy_param_shapes = [p.shape for p in policy_unadapted_lang.parameters()]
+
+mission_adapter_2 = MissionParamAdapter(mission_encoder_output_dim, policy_param_shapes).to(device)
+mission_adapter_2.load_state_dict(ckpt_2["mission_adapter"])    
+mission_adapter_2.eval()
+
+
+baseline = LinearFeatureBaseline(input_size).to(device)
+
+
+def get_language_adapted_params(policy, mission_str, mission_encoder, mission_adapter, vectorizer, device):
+    mission_vec = vectorizer.transform([mission_str]).toarray()[0]
+    mission_tensor = torch.from_numpy(mission_vec.astype(np.float32)).unsqueeze(0).to(device)
+    with torch.no_grad():
+        mission_emb = mission_encoder(mission_tensor)
+        mission_emb = mission_emb.to(device)
+        delta_thetas = mission_adapter(mission_emb)
+        delta_thetas = [delta * delta_theta for delta in delta_thetas]
+    policy_params = list(policy.parameters())
+    param_names = list(dict(policy.named_parameters()).keys())
+    from collections import OrderedDict
+    theta_prime = OrderedDict(
+        (name, param + delta.squeeze(0))
+        for name, param, delta in zip(param_names, policy_params, delta_thetas)
+    )
+    return theta_prime
+
+
+def evaluate_policy(env, policy, params=None, max_steps=max_steps, render=False):
+    obs, _ = env.reset()
+    steps = 0
+    done = False
+    while not done and steps < max_steps:
+        if render:
+            env.render("human")
+        obs_vec = preprocess_obs(obs)
+        obs_tensor = torch.from_numpy(obs_vec).float().unsqueeze(0).to(device)
+        with torch.no_grad():
+            if params is not None:
+                dist = policy(obs_tensor, params=params)
+            else:
+                dist = policy(obs_tensor)
+            action = dist.sample().item()
+        obs, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
+        steps += 1
+    return steps
+
+
+# Evaluation
+N_MISSIONS = 20
+N_EPISODES = 40
+
+results_lang = []
+results_lang_unadapted = []
+
+print("Comparing language-adapted policy and random policy on random missions:")
+for i in range(N_MISSIONS):
+    mission = random.choice(missions)
+    print(f"\nMission {i+1}/{N_MISSIONS}: '{mission}'")
+
+    # 1. Lang-adapted policy
+    SL.vectorizer = vectorizer
+    SL.mission_encoder = mission_encoder
+    theta_prime = get_language_adapted_params(policy_lang, mission, mission_encoder, mission_adapter, vectorizer, device)
+    lang_steps = []
+    print("  [Lang-adapted policy episodes]")
+    for ep in range(N_EPISODES):
+        env.reset_task(mission)
+        steps = evaluate_policy(env, policy_lang, params=theta_prime)
+        lang_steps.append(steps)
+    mean_lang = np.mean(lang_steps)
+    std_lang = np.std(lang_steps)
+    results_lang.append(mean_lang)
+    print(f"    --> Avg steps: {mean_lang:.2f} ± {std_lang:.2f}")
+
+
+    # 2. Unadapted lang policy
+    SL.vectorizer = vectorizer_2
+    SL.mission_encoder = mission_encoder_2
+    theta_prime_unadapted = get_language_adapted_params(policy_unadapted_lang, mission, mission_encoder_2, mission_adapter_2, vectorizer_2, device)
+    lang_unadapted_steps = []
+    print("  [Lang-unadapted policy episodes]")
+    for ep in range(N_EPISODES):
+        env.reset_task(mission)
+        steps = evaluate_policy(env, policy_unadapted_lang, params=theta_prime_unadapted)
+        lang_unadapted_steps.append(steps)
+    mean_lang_unadapted = np.mean(lang_unadapted_steps)
+    std_lang_unadapted = np.std(lang_unadapted_steps)
+    results_lang_unadapted.append(mean_lang_unadapted)
+    print(f"    --> Avg steps: {mean_lang_unadapted:.2f} ± {std_lang_unadapted:.2f}")
+
+end_time = time.time()
+
+print(f"Execution time: {(end_time - start_time)/60} minutes\n")
+
+print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
+
+# Results
+print("\n===== FINAL AGGREGATE RESULTS =====")
+print(f"Lang-adapted policy: {np.mean(results_lang):.2f} ± {np.std(results_lang):.2f}")
+print(f"unadapted Lang policy: {np.mean(results_lang_unadapted):.2f} ± {np.std(results_lang_unadapted):.2f}")
