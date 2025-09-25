@@ -5,6 +5,8 @@ import torch
 import pickle
 import time
 import gc
+import os
+import json
 from maml_rl.baseline import LinearFeatureBaseline
 from maml_rl.policies.categorical_mlp import CategoricalMLPPolicy
 from maml_rl.metalearners.maml_trpo import MAMLTRPO
@@ -96,10 +98,10 @@ def select_missions_and_vocab(env):
 
 def main():
     
-    env_name = "GoToLocal"
+    env_name = "OpenDoor"
     room_size=7
     num_dists=3
-    max_steps=300
+    max_steps=500
     num_workers=4
     num_batches=50
 
@@ -273,10 +275,6 @@ def main():
     # # print("Meta-training for maml finished!")
 
 
-
-    import os, json
-
-    env_name = str(model) if "model" in globals() else "UnknownEnv"
     env_dir = os.path.join("metrics", env_name)
     os.makedirs(env_dir, exist_ok=True)
 

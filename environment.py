@@ -32,7 +32,7 @@ PICKUP_MISSIONS_VOCAB = [f"pick up the {color} {obj}" for color in COLORS_ALL fo
 DOOR_MISSIONS = [f"go to the {color} door" for color in COLORS]
 DOOR_MISSIONS_VOCAB = [f"go to the {color} door" for color in COLORS_ALL]
 
-OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in COLORS_ALL]
+OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in COLORS]
 OPEN_DOOR_MISSIONS_VOCAB = [f"open the {color} door" for color in COLORS_ALL]
 
 DOOR_LOC_MISSIONS = [f"open the door {prep} the {loc}" for prep in PREP_LOCS for loc in LOC_NAMES]

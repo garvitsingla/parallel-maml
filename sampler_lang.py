@@ -51,7 +51,7 @@ def rollout_one_task(args):
 # Mission Wrapper
 class BabyAIMissionTaskWrapper(gym.Wrapper):
     def __init__(self, env, missions=None):
-        assert missions is not None, "You must provide a missions list!"
+        assert missions is not None, "tasks not there"
         super().__init__(env)
         self.missions = missions
         self.current_mission = None
@@ -137,7 +137,7 @@ class MultiTaskSampler(object):
                  baseline=None,
                  seed=None,
                  num_workers=0):   
-        assert env is not None, "Must pass prebuilt BabyAI env!"
+        assert env is not None, "Must pass BabyAI env"
         self.env = env
         self.env_fn = env_fn
         self.batch_size = batch_size
@@ -155,7 +155,7 @@ class MultiTaskSampler(object):
         all_step_counts = []
         valid_episodes_all = []
         if (self.num_workers or 0) > 0:
-            assert self.env_fn is not None, "env_fn required when using num_workers"
+            assert self.env_fn is not None, "env_fn no there "
  
             policy_state_dict_cpu = {k: v.cpu() for k, v in self.policy.state_dict().items()}
             policy_cls = self.policy.__class__
@@ -168,7 +168,7 @@ class MultiTaskSampler(object):
 
             tasks = self.sample_tasks(meta_batch_size)
 
-            # compute theta' per task on parent
+            # compute theta' per task
             adapted_params_cpu = []
             for t in tasks:
                 theta_prime = meta_learner.adapt_one(t)

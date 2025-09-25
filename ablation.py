@@ -15,8 +15,6 @@ import sampler_lang as SL
 from maml_rl.policies.categorical_mlp import CategoricalMLPPolicy
 import pickle
 import time
-from maml_rl.utils.reinforcement_learning import reinforce_loss
-from maml_rl.episode import BatchEpisodes
 from maml_rl.baseline import LinearFeatureBaseline
 
 seed = 42
@@ -33,18 +31,23 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 OBJECTS = ['box']
 COLORS = ['red', 'green', 'blue', 'purple','yellow', 'grey']
+PREP_LOCS = ['on', 'at', 'to']
+LOC_NAMES = ['right', 'front']
 DOOR_COLORS = ['yellow', 'grey']
+
+
 
 PICKUP_MISSIONS = [f"pick up the {color} {obj}" for color in COLORS for obj in OBJECTS]
 LOCAL_MISSIONS = [f"go to the {color} {obj}" for color in COLORS for obj in OBJECTS]
 DOOR_MISSIONS = [f"go to the {color} door" for color in DOOR_COLORS]
+DOOR_LOC_MISSIONS = [f"open the door {prep} the {loc}" for prep in PREP_LOCS for loc in LOC_NAMES]
 OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in DOOR_COLORS]
 
-room_size=9
+room_size=10
 num_dists=1
-max_steps=300
+max_steps=500
 
-model = "GoToOpen_8_12_600"  
+model = "OpenDoor_7_3_500"  
 delta_theta = 0.7
 num_batches = 50
 
@@ -62,11 +65,11 @@ num_batches = 50
 # print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
 
 
-# GoToObjDoor
-base_env = GoToObjDoorMissionEnv(max_steps=max_steps, num_distractors=num_dists)
-missions=LOCAL_MISSIONS + DOOR_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
+# # GoToObjDoor
+# base_env = GoToObjDoorMissionEnv(max_steps=max_steps, num_distractors=num_dists)
+# missions=LOCAL_MISSIONS + DOOR_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
 
 
 # # OpenDoorMissionEnv
@@ -76,11 +79,19 @@ print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
 # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
 
 
-print(f"env name {base_env} \n model used: {model}\n")
+# print(f"env name {base_env} \n model used: {model}\n")
+
+
+# OpenDoorLocMissionEnv
+base_env = OpenDoorLocMissionEnv(room_size=room_size, max_steps=max_steps)
+missions = OPEN_DOOR_MISSIONS + DOOR_LOC_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+
 
 # restore saved lang-adapted policy 
 
-ckpt = torch.load(f"lang_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
+lang_model = torch.load(f"lang_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
 with open(f"lang_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
@@ -88,7 +99,7 @@ with open(f"lang_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl",
 SL.vectorizer = vectorizer  
 mission_encoder_output_dim = 32
 SL.mission_encoder = MissionEncoder(len(SL.vectorizer.get_feature_names_out()), 32, 64, mission_encoder_output_dim).to(device)
-SL.mission_encoder.load_state_dict(ckpt["mission_encoder"])
+SL.mission_encoder.load_state_dict(lang_model["mission_encoder"])
 SL.mission_encoder.eval()
 mission_encoder = SL.mission_encoder
 preprocess_obs = SL.preprocess_obs
@@ -106,19 +117,19 @@ policy_lang = CategoricalMLPPolicy(
     hidden_sizes=hidden_sizes,
     nonlinearity=nonlinearity,
 ).to(device)  
-policy_lang.load_state_dict(ckpt["policy"])
+policy_lang.load_state_dict(lang_model["policy"])
 policy_lang.eval()
 policy_param_shapes = [p.shape for p in policy_lang.parameters()]
 
 # Adapter
 mission_adapter = MissionParamAdapter(mission_encoder_output_dim, policy_param_shapes).to(device)
-mission_adapter.load_state_dict(ckpt["mission_adapter"])    
+mission_adapter.load_state_dict(lang_model["mission_adapter"])    
 mission_adapter.eval()
 
 
-# restore saved ablation 
+# restore saved unadapted language policy 
 
-ckpt_2 = torch.load(f"ablation_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
+unadpated_lang_policy = torch.load(f"ablation_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
 with open(f"ablation_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl", "rb") as g:
     vectorizer_2 = pickle.load(g)
 
@@ -126,7 +137,7 @@ with open(f"ablation_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.p
 SL.vectorizer = vectorizer_2  
 mission_encoder_output_dim = 32
 SL.mission_encoder = MissionEncoder(len(SL.vectorizer.get_feature_names_out()), 32, 64, mission_encoder_output_dim).to(device)
-SL.mission_encoder.load_state_dict(ckpt_2["mission_encoder"])
+SL.mission_encoder.load_state_dict(unadpated_lang_policy["mission_encoder"])
 SL.mission_encoder.eval()
 mission_encoder_2 = SL.mission_encoder
 preprocess_obs = SL.preprocess_obs
@@ -146,13 +157,13 @@ policy_unadapted_lang = CategoricalMLPPolicy(
 ).to(device)  
 
 # Adapter
-policy_unadapted_lang.load_state_dict(ckpt_2["policy"])
+policy_unadapted_lang.load_state_dict(unadpated_lang_policy["policy"])
 policy_unadapted_lang.eval()
 
 policy_param_shapes = [p.shape for p in policy_unadapted_lang.parameters()]
 
 mission_adapter_2 = MissionParamAdapter(mission_encoder_output_dim, policy_param_shapes).to(device)
-mission_adapter_2.load_state_dict(ckpt_2["mission_adapter"])    
+mission_adapter_2.load_state_dict(unadpated_lang_policy["mission_adapter"])    
 mission_adapter_2.eval()
 
 
@@ -245,7 +256,7 @@ end_time = time.time()
 
 print(f"Execution time: {(end_time - start_time)/60} minutes\n")
 
-print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
+print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {missions}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
 
 # Results
 print("\n===== FINAL AGGREGATE RESULTS =====")

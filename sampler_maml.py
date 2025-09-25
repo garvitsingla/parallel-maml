@@ -52,7 +52,7 @@ def rollout_one_task(args):
 # Mission Wrapper
 class BabyAIMissionTaskWrapper(gym.Wrapper):
     def __init__(self, env, missions=None):
-        assert missions is not None, "You must provide a missions list!"
+        assert missions is not None, "tasks not there"
         super().__init__(env)
         self.missions = missions
         self.current_mission = None
@@ -114,7 +114,7 @@ class MultiTaskSampler(object):
                  seed=None,
                  num_workers=0):  
                  
-        assert env is not None, "Must pass prebuilt BabyAI env!"
+        assert env is not None, "Must pass BabyAI env"
         self.env = env
         self.env_fn = env_fn
         self.batch_size = batch_size
@@ -220,7 +220,7 @@ class MultiTaskSampler(object):
                 valid_episodes_all.append(valid_batch)
 
         else:
-            assert self.env_fn is not None, "env_fn required when using num_workers"
+            assert self.env_fn is not None, "env_fn not there"
 
             policy_state_dict_cpu = {k: v.cpu() for k, v in self.policy.state_dict().items()}
             policy_cls = self.policy.__class__
