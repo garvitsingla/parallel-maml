@@ -43,19 +43,19 @@ DOOR_MISSIONS = [f"go to the {color} door" for color in DOOR_COLORS]
 DOOR_LOC_MISSIONS = [f"open the door {prep} the {loc}" for prep in PREP_LOCS for loc in LOC_NAMES]
 OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in DOOR_COLORS]
 
-room_size=10
-num_dists=1
-max_steps=500
+room_size=9
+num_dists=9
+max_steps=300
 
-model = "OpenDoor_7_3_500"  
-delta_theta = 0.7
+model = "GoToLocal_7_3_300"  
+delta_theta = 1
 num_batches = 50
 
-# # GoToLocal
-# base_env = GoToLocalMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
-# missions=LOCAL_MISSIONS
-# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {LOCAL_MISSIONS}\n ")
+# GoToLocal
+base_env = GoToLocalMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
+missions=LOCAL_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {LOCAL_MISSIONS}\n ")
 
 
 # # Pickup
@@ -82,11 +82,11 @@ num_batches = 50
 # print(f"env name {base_env} \n model used: {model}\n")
 
 
-# OpenDoorLocMissionEnv
-base_env = OpenDoorLocMissionEnv(room_size=room_size, max_steps=max_steps)
-missions = OPEN_DOOR_MISSIONS + DOOR_LOC_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+# # OpenDoorLocMissionEnv
+# base_env = OpenDoorLocMissionEnv(room_size=room_size, max_steps=max_steps)
+# missions = OPEN_DOOR_MISSIONS + DOOR_LOC_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
 
 
 # restore saved lang-adapted policy 

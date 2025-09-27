@@ -98,12 +98,13 @@ def select_missions_and_vocab(env):
 
 def main():
     
-    env_name = "OpenDoor"
+    env_name = "OpenDoorsOrder"
     room_size=7
-    num_dists=3
+    num_dists=4
     max_steps=500
     num_workers=4
     num_batches=50
+    meta_batch_size=25
 
 
     missions, vocabs = select_missions_and_vocab(env_name)
