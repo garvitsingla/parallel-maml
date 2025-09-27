@@ -32,21 +32,41 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 OBJECTS = ['box']
 COLORS = ['red', 'green', 'blue', 'purple','yellow', 'grey']
 PREP_LOCS = ['on', 'at', 'to']
+
+# Location names
 LOC_NAMES = ['right', 'front']
+
 DOOR_COLORS = ['yellow', 'grey']
 
-
-
+# For Pickup
 PICKUP_MISSIONS = [f"pick up the {color} {obj}" for color in COLORS for obj in OBJECTS]
+
+# For GoToLocal
 LOCAL_MISSIONS = [f"go to the {color} {obj}" for color in COLORS for obj in OBJECTS]
+
+# For environments that include doors (GoToObjDoor, GoToOpen, Open)
 DOOR_MISSIONS = [f"go to the {color} door" for color in DOOR_COLORS]
-DOOR_LOC_MISSIONS = [f"open the door {prep} the {loc}" for prep in PREP_LOCS for loc in LOC_NAMES]
 OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in DOOR_COLORS]
+DOOR_LOC_MISSIONS = [f"open the door {prep} the {loc}" for prep in PREP_LOCS for loc in LOC_NAMES]
+OPEN_TWO_DOORS_MISSIONS = [f"open the {c1} door, then open the {c2} door" for c1 in DOOR_COLORS for c2 in DOOR_COLORS]
+OPEN_DOORS_ORDER_MISSIONS = (
+    [f"open the {c1} door" for c1 in DOOR_COLORS] +
+    [f"open the {c1} door, then open the {c2} door" for c1 in DOOR_COLORS for c2 in DOOR_COLORS] +
+    [f"open the {c1} door after you open the {c2} door" for c1 in DOOR_COLORS for c2 in DOOR_COLORS]
+)
+
+ACTION_OBJ_DOOR_MISSIONS = (
+    [f"pick up the {c} box" for c in COLORS] +
+    [f"go to the {c} box"   for c in COLORS] +
+    [f"go to the {c} door"   for c in DOOR_COLORS] +
+    [f"open a {c} door"      for c in DOOR_COLORS]
+)
+
 
 room_size=10
 num_dists=2
 max_steps=500
-model = "OpenDoor_7_3_500"  
+model = "ActionObjDoor_7_3_500"  
 delta_theta = 1
 num_batches = 50
 
@@ -61,7 +81,8 @@ num_batches = 50
 # base_env = PickupDistMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
 # missions=PICKUP_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
+# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n")
+
 
 
 # # GoToObjDoor
@@ -71,14 +92,21 @@ num_batches = 50
 # print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
 
 
-# OpenDoorMissionEnv
-base_env = OpenDoorMissionEnv(room_size=room_size, max_steps=max_steps)
-missions = OPEN_DOOR_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+
+# # GoToOpen
+# base_env = GoToOpenMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
+# missions=LOCAL_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size} \nnum_dists: {num_dists} \nmax_steps: {max_steps} \n")
 
 
-# print(f"env name {base_env} \n model used: {model}\n")
+
+# # OpenDoorMissionEnv
+# base_env = OpenDoorMissionEnv(room_size=room_size, max_steps=max_steps)
+# missions = OPEN_DOOR_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+
 
 
 # # OpenDoorLocMissionEnv
@@ -86,6 +114,37 @@ print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
 # missions = OPEN_DOOR_MISSIONS + DOOR_LOC_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
 # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+
+
+
+
+# # OpenTwoDoors
+# base_env = OpenTwoDoorsMissionEnv(room_size=room_size, max_steps=None)
+# missions = OPEN_TWO_DOORS_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}")
+#         # \nmax_steps: {max_steps} \n")
+
+
+
+
+
+# # OpenDoorsOrder
+# base_env = OpenDoorsOrderMissionEnv(room_size=room_size)
+# missions = OPEN_DOORS_ORDER_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}\n")
+
+
+
+# ActionObjDoor
+base_env = ActionObjDoorMissionEnv()
+missions = ACTION_OBJ_DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print("General setup for ActionObjDoor")
+# # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
+
+
 
 
 # restore saved lang-adapted policy 
