@@ -102,10 +102,10 @@ def select_missions_and_vocab(env):
 
 def main():
 
-    env_name = "GoToObjDoor"
+    env_name = "OpenDoor"
     room_size=7
     num_dists=3
-    max_steps=300
+    max_steps=500
     delta_theta=1
     num_workers=4
     num_batches = 50
