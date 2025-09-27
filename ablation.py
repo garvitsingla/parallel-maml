@@ -43,10 +43,10 @@ DOOR_MISSIONS = [f"go to the {color} door" for color in DOOR_COLORS]
 DOOR_LOC_MISSIONS = [f"open the door {prep} the {loc}" for prep in PREP_LOCS for loc in LOC_NAMES]
 OPEN_DOOR_MISSIONS = [f"open the {color} door" for color in DOOR_COLORS]
 
-room_size=9
+room_size=10
 num_dists=2
-max_steps=300
-model = "GoToObjDoor_7_3_300"  
+max_steps=500
+model = "OpenDoor_7_3_500"  
 delta_theta = 1
 num_batches = 50
 
@@ -64,18 +64,18 @@ num_batches = 50
 # print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n num_batches: {num_batches}\n")
 
 
-# GoToObjDoor
-base_env = GoToObjDoorMissionEnv(max_steps=max_steps, num_distractors=num_dists)
-missions=LOCAL_MISSIONS + DOOR_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
-
-
-# # OpenDoorMissionEnv
-# base_env = OpenDoorMissionEnv(room_size=room_size, max_steps=max_steps)
-# missions = OPEN_DOOR_MISSIONS
+# # GoToObjDoor
+# base_env = GoToObjDoorMissionEnv(max_steps=max_steps, num_distractors=num_dists)
+# missions=LOCAL_MISSIONS + DOOR_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+# print(f"num_dists: {num_dists}\n max_steps: {max_steps}\n")
+
+
+# OpenDoorMissionEnv
+base_env = OpenDoorMissionEnv(room_size=room_size, max_steps=max_steps)
+missions = OPEN_DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
 
 
 # print(f"env name {base_env} \n model used: {model}\n")
