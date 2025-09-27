@@ -109,10 +109,10 @@ def select_missions_and_vocab(env):
 
 def main():
 
-    env_name = "PickupDist"
+    env_name = "GoToObjDoor"
     room_size=7
-    num_dists=2
-    max_steps=350
+    num_dists=3
+    max_steps=300
     delta_theta=1
     num_workers=4
     num_batches = 50
