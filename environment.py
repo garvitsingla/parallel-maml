@@ -53,7 +53,7 @@ OPEN_DOORS_ORDER_MISSIONS_VOCAB = (
 )
 
 # For all objects and doors
-ACTION_OBJ_DOOR_MISSIONS_VOCAB = (
+ACTION_OBJ_DOOR_MISSIONS = (
     [f"pick up the {c} ball" for c in COLORS] +
     [f"pick up the {c} key"  for c in COLORS] +
     [f"go to the {c} ball"   for c in COLORS] +
@@ -61,7 +61,7 @@ ACTION_OBJ_DOOR_MISSIONS_VOCAB = (
     [f"go to the {c} door"   for c in COLORS] +
     [f"open a {c} door"      for c in COLORS]
 )
-ACTION_OBJ_DOOR_MISSIONS = (
+ACTION_OBJ_DOOR_MISSIONS_VOCAB = (
     [f"pick up the {c} ball" for c in COLORS_ALL] +
     [f"pick up the {c} key"  for c in COLORS_ALL] +
     [f"pick up the {c} box"  for c in COLORS_ALL] +
@@ -73,72 +73,23 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 # For environment PutNext
-PUTNEXT_VERBS    = ["put", "place"]
-PUTNEXT_ARTICLES = ["the", "a"]
 
-def _aug_phrase(v, a1, c1, t1, a2, c2, t2):
-    return f"{v} {a1} {c1} {t1} next to {a2} {c2} {t2}"
+def _aug_phrase(c1, t1, c2, t2):
+    return f"put the {c1} {t1} next to the {c2} {t2}"
 
 PUTNEXT_MISSIONS = [
-    _aug_phrase(v, a1, c1, t1, a2, c2, t2)
-    for v in PUTNEXT_VERBS
-    for a1 in PUTNEXT_ARTICLES
-    for a2 in PUTNEXT_ARTICLES
+    _aug_phrase(c1, t1, c2, t2)
     for c1 in COLORS for t1 in OBJECTS
     for c2 in COLORS for t2 in OBJECTS
     if not (c1 == c2 and t1 == t2)
 ]
 
-
-# def build_vocab_missions_gotolocal(objects=None, colors=None):
-#     objs = objects or OBJECTS
-#     cols = colors  or COLORS
-#     return [f"go to the {c} {t}" for c in cols for t in objs]
-
-# def build_vocab_missions_pickup(objects=None, colors=None):
-#     objs = objects or OBJECTS
-#     cols = colors  or COLORS
-#     return [f"pick up the {c} {t}" for c in cols for t in objs]
-
-# def build_vocab_missions_gotoobjdoor(objects=None, colors=None):
-#     objs = objects or OBJECTS
-#     cols = colors  or COLORS
-#     return (build_vocab_missions_gotolocal(objs, cols) +
-#             [f"go to the {c} door" for c in cols])
-
-# def build_vocab_missions_gotoopen(objects=None, colors=None):
-#     # GoTo on a multiroom layout; same tokens as GoToLocal by default
-#     return build_vocab_missions_gotolocal(objects, colors)
-
-# def build_vocab_missions_opendoor(colors=None):
-#     cols = colors or COLORS
-#     return [f"open the {c} door" for c in cols]
-
-# def build_vocab_missions_opendoorloc(colors=None):
-#     cols = colors or COLORS
-#     return (build_vocab_missions_opendoor(cols) +
-#             [f"open the door {p} the {l}" for p in PREP_LOCS for l in LOC_NAMES])
-
-# def build_vocab_missions_opentwodoors(colors=None):
-#     cols = colors or COLORS
-#     return [f"open the {c1} door, then open the {c2} door" for c1 in cols for c2 in cols]
-
-# def build_vocab_missions_opendoorsorder(colors=None):
-#     cols = colors or COLORS
-#     return (build_vocab_missions_opendoor(cols) +
-#             [f"open the {c1} door, then open the {c2} door" for c1 in cols for c2 in cols] +
-#             [f"open the {c1} door after you open the {c2} door" for c1 in cols for c2 in cols])
-
-# def build_vocab_missions_actionobjdoor(objects=None, obj_colors=None, door_colors=None):
-#     objs = objects or OBJECTS
-#     ocls = obj_colors or COLORS
-#     dcls = door_colors or COLORS
-#     return ([f"pick up the {c} {t}" for c in ocls for t in objs] +
-#             [f"go to the {c} {t}"   for c in ocls for t in objs] +
-#             [f"go to the {c} door"  for c in dcls] +
-#             [f"open a {c} door"     for c in dcls])
-
-
+PUTNEXT_MISSIONS_VOCAB = [
+    _aug_phrase(c1, t1, c2, t2)
+    for c1 in COLORS_ALL for t1 in OBJECTS_ALL
+    for c2 in COLORS_ALL for t2 in OBJECTS_ALL
+    if not (c1 == c2 and t1 == t2)
+]
 
 
 class GoToLocalMissionEnv(GoToLocal):
@@ -846,7 +797,7 @@ class PutNextLocalMissionEnv(PutNextLocal):
         if self.max_steps is not None:
             self.max_steps = int(max_steps)
         self._forced_mission = None
-        # self.render_mode = kwargs.get('render_mode', 'human')
+        self.render_mode = kwargs.get('render_mode', 'human')
 
     def set_forced_mission(self, mission: str):
         self._forced_mission = mission

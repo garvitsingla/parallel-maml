@@ -24,7 +24,7 @@ from environment import (LOCAL_MISSIONS, LOCAL_MISSIONS_VOCAB,
                          OPEN_TWO_DOORS_MISSIONS, OPEN_TWO_DOORS_MISSIONS_VOCAB,
                          OPEN_DOORS_ORDER_MISSIONS, OPEN_DOORS_ORDER_MISSIONS_VOCAB,
                          ACTION_OBJ_DOOR_MISSIONS, ACTION_OBJ_DOOR_MISSIONS_VOCAB,
-                         PUTNEXT_MISSIONS)
+                         PUTNEXT_MISSIONS, PUTNEXT_MISSIONS_VOCAB)
 from environment import (GoToLocalMissionEnv, 
                          GoToOpenMissionEnv, 
                          GoToObjDoorMissionEnv,
@@ -33,7 +33,8 @@ from environment import (GoToLocalMissionEnv,
                          OpenDoorLocMissionEnv,
                          OpenTwoDoorsMissionEnv,
                          OpenDoorsOrderMissionEnv,
-                         ActionObjDoorMissionEnv)
+                         ActionObjDoorMissionEnv,
+                         PutNextLocalMissionEnv)
 
 
 start_time = time.time()
@@ -62,8 +63,8 @@ def build_env(env, room_size, num_dists, max_steps, missions):
         base = OpenDoorsOrderMissionEnv(room_size=room_size)
     elif env == "ActionObjDoor":
         base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None)
-    # elif env == "PutNextLocal":
-    #     base = PutNextLocalMissionEnv(room_size=room_size, max_steps=max_steps, num_dists=None)
+    elif env == "PutNextLocal":
+        base = PutNextLocalMissionEnv(room_size=room_size, max_steps=max_steps, num_dists=None)
     else:
         raise ValueError(f"Unknown env_name: {env}")
 
@@ -90,21 +91,21 @@ def select_missions_and_vocab(env):
         return OPEN_DOORS_ORDER_MISSIONS, OPEN_DOORS_ORDER_MISSIONS_VOCAB
     if env == "ActionObjDoor":
         return ACTION_OBJ_DOOR_MISSIONS, ACTION_OBJ_DOOR_MISSIONS_VOCAB
-    # if env == "PutNextLocal":
-    #     return PUTNEXT_MISSIONS, PUTNEXT_MISSIONS  # vocab == missions list here
+    if env == "PutNextLocal":
+        return PUTNEXT_MISSIONS, PUTNEXT_MISSIONS_VOCAB 
     raise ValueError(f"Unknown env for missions/vocab: {env}")
 
 
 
 def main():
     
-    env_name = "OpenDoorsOrder"
+    env_name = "PutNextLocal"
     room_size=7
-    num_dists=4
-    max_steps=500
+    num_dists=10
+    max_steps=800
     num_workers=4
     num_batches=50
-    meta_batch_size=25
+    meta_batch_size=45
 
 
     missions, vocabs = select_missions_and_vocab(env_name)
