@@ -65,11 +65,11 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=8
-num_dists=8
-max_steps=600
-model = "OpenDoorsOrder_7_3_500"  
-delta_theta = 0.7
+room_size=10
+num_dists=9
+max_steps=500
+model = "ActionObjDoor_7_3_300"  
+delta_theta = 0.5
 num_batches = 50
 
 # # GoToLocal
@@ -131,20 +131,20 @@ num_batches = 50
 
 
 
-# OpenDoorsOrder
-base_env = OpenDoorsOrderMissionEnv(room_size=room_size)
-missions = OPEN_DOORS_ORDER_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"room_size: {room_size}\n")
-
-
-
-# # ActionObjDoor
-# base_env = ActionObjDoorMissionEnv()
-# missions = ACTION_OBJ_DOOR_MISSIONS
+# # OpenDoorsOrder
+# base_env = OpenDoorsOrderMissionEnv(room_size=room_size)
+# missions = OPEN_DOORS_ORDER_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print("General setup for ActionObjDoor")
-# # # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
+# print(f"room_size: {room_size}\n")
+
+
+
+# ActionObjDoor
+base_env = ActionObjDoorMissionEnv()
+missions = ACTION_OBJ_DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print("General setup for ActionObjDoor")
+# # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
 
 
 

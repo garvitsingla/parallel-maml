@@ -22,7 +22,7 @@ def load_env_data(env_dir):
     lang  = np.load(lang_path)
     env_name = os.path.basename(os.path.normpath(env_dir))
     return maml, lang, env_name
-def plot_line(env_dir, save_path=None, show=True, dpi=300, out_dir="figures"):
+def plot_line(env_dir, save_path=None, show=True, dpi=300, out_dir="figures_ablation"):
     maml, lang, env_name = load_env_data(env_dir)
 
     plt.plot(maml, label="Ablation Policy")
