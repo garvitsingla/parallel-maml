@@ -788,75 +788,43 @@ class ActionObjDoorMissionEnv(ActionObjDoor):
 
 
 
-
-
 class PutNextLocalMissionEnv(PutNextLocal):
 
-    def __init__(self, room_size=8, num_dists=None, max_steps=None, **kwargs):
+    def __init__(self, room_size=8,num_dists = 4, max_steps=None, **kwargs):
         super().__init__(room_size=room_size, max_steps=max_steps, **kwargs)
-        if self.max_steps is not None:
-            self.max_steps = int(max_steps)
+        if max_steps is not None:
+            self.max_steps = max_steps 
         self._forced_mission = None
         # self.render_mode = kwargs.get('render_mode', 'human')
 
-    def set_forced_mission(self, mission: str):
+    def set_forced_mission(self, mission):
         self._forced_mission = mission
 
-    def gen_mission(self):
-        if not self._forced_mission:
-            return super().gen_mission()
-
-        # Single room env: place the agent using the base helper
-        self.place_agent()
-
-        # Parse: (put|place) (a|the) C1 T1 next to (a|the) C2 T2
-        pat = r"""
-            ^\s*(?:put|place)\s+(?:a|the)\s+(\w+)\s+(ball|box|key)\s+
-            next\s+to\s+(?:a|the)\s+(\w+)\s+(ball|box|key)\s*$"""
-        m = re.match(pat, self._forced_mission, re.IGNORECASE | re.VERBOSE)
+    def _parse_forced_putnext(self, text: str):
+        pat = r"""^\s*put\s+the\s+(?P<c1>[a-z]+)\s+(?P<t1>[a-z]+)\s+
+              next\s+to\s+the\s+(?P<c2>[a-z]+)\s+(?P<t2>[a-z]+)\s*$"""
+        m = re.match(pat, text, flags=re.IGNORECASE | re.X)
         if not m:
-            # If the string doesn't match, just use the base generator to stay robust.
-            return super().gen_mission()
-
-        c1, t1, c2, t2 = [g.lower() for g in m.groups()]
-
-        # Clamp to valid colors/types
-        if t1 not in OBJECTS: t1 = self._rand_elem(OBJECTS)
-        if t2 not in OBJECTS: t2 = self._rand_elem(OBJECTS)
-        if c1 not in COLORS:  c1 = self._rand_elem(COLORS)
-        if c2 not in COLORS:  c2 = self._rand_elem([c for c in COLORS if c != c1])
-
-        # Place the two targets in the only room (0, 0)
-        o1, _ = self.add_object(0, 0, kind=t1, color=c1)
-        o2, _ = self.add_object(0, 0, kind=t2, color=c2)
-
-        # Add distractors: unique (type,color) combos, avoid exact targets
-        target_pairs = {(t1, c1), (t2, c2)}
-        placed_pairs = set(target_pairs)
-        max_needed = max(0, getattr(self, "num_dists", 0))  # base PutNextLocal uses num_dists
-
-        attempts, max_attempts = 0, 200
-        while len(placed_pairs) < max_needed + len(target_pairs) and attempts < max_attempts:
-            tt = self._rand_elem(self._types)
-            cc = self._rand_elem(COLORS)
-            if (tt, cc) in placed_pairs:
-                attempts += 1
-                continue
-            try:
-                self.add_object(0, 0, kind=tt, color=cc)
-                placed_pairs.add((tt, cc))
-            except Exception:
-                pass
-            attempts += 1
-
-        self.check_objs_reachable()
-
-        # Build instruction + surface mission exactly like BabyAI does
-        self.instrs = PutNextInstr(ObjDesc(o1.type, o1.color), ObjDesc(o2.type, o2.color))
-        self.mission = self.instrs.surface(self)
-        return
-
-
+            raise ValueError("Incorrect PutNext mission")
+                
+        c1, t1, c2, t2 = m.group("c1", "t1", "c2", "t2")
+        return c1.lower(), t1.lower(), c2.lower(), t2.lower()
+    
+    def gen_mission(self):
+        # If a mission was forced by the wrapper, use it verbatim.
+        if getattr(self, "_forced_mission", None):
+            c1, t1, c2, t2 = self._parse_forced_putnext(self._forced_mission)
+            self.place_agent()
+            self.add_object(0, 0, kind=t1, color=c1)
+            self.add_object(0, 0, kind=t2, color=c2)
+            self.check_objs_reachable()
+            self.instrs = PutNextInstr(ObjDesc(t1, c1), ObjDesc(t2, c2))
+            # lock the exact surface to your fixed phrasing:
+            self.mission = f"put the {c1} {t1} next to the {c2} {t2}"
+            # self._forced_mission = None
+            return
+        
+        return super().gen_mission()
 
 
 
