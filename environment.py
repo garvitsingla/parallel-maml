@@ -797,7 +797,7 @@ class PutNextLocalMissionEnv(PutNextLocal):
         if self.max_steps is not None:
             self.max_steps = int(max_steps)
         self._forced_mission = None
-        self.render_mode = kwargs.get('render_mode', 'human')
+        # self.render_mode = kwargs.get('render_mode', 'human')
 
     def set_forced_mission(self, mission: str):
         self._forced_mission = mission
