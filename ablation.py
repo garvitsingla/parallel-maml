@@ -63,10 +63,10 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=5
-num_dists=2
+room_size=7
+num_dists=12
 max_steps=500
-model = "OpenDoorsOrder_7_10_300"  
+model = "OpenDoorsOrder_7_10_600"  
 delta_theta = 0.5
 num_batches = 50
 
@@ -97,7 +97,7 @@ num_batches = 50
 # base_env = GoToOpenMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
 # missions=LOCAL_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print(f"room_size: {room_size} \nnum_dists: {num_dists} \nmax_steps: {max_steps} \n")
+# print(f"room_size: {room_size} \nnum_dists: {num_dists} \nmax_steps: {max_steps} \ndelta_theta: {delta_theta}")
 
 
 

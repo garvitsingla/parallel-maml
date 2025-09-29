@@ -63,18 +63,18 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=7
-num_dists=3
+room_size=9
+num_dists=9
 max_steps=300
-model = "GoToLocal_7_3_300"  
-delta_theta = 1
+model = "ActionObjDoor_7_3_300"  
+delta_theta = 0.5
 num_batches = 50
 
-# GoToLocal
-base_env = GoToLocalMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
-missions=LOCAL_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {LOCAL_MISSIONS}\n ")
+# # GoToLocal
+# base_env = GoToLocalMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
+# missions=LOCAL_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {LOCAL_MISSIONS}\n ")
 
 
 # # Pickup
@@ -137,12 +137,12 @@ print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}
 
 
 
-# # ActionObjDoor
-# base_env = ActionObjDoorMissionEnv()
-# missions = ACTION_OBJ_DOOR_MISSIONS
-# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print("General setup for ActionObjDoor")
-# # # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
+# ActionObjDoor
+base_env = ActionObjDoorMissionEnv()
+missions = ACTION_OBJ_DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print("General setup for ActionObjDoor")
+# # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
 
 
 
@@ -186,8 +186,8 @@ mission_adapter.eval()
 
 # Policy Only Ablation
 
-policy_only_model = torch.load(f"ablation_policy_only/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
-with open(f"ablation_policy_only/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl", "rb") as f:
+policy_only_model = torch.load(f"ablation_policy_only/lang_policy_{model}_{num_batches}.pth", map_location=device)
+with open(f"ablation_policy_only/vectorizer_lang_{model}_{num_batches}.pkl", "rb") as f:
     vectorizer = pickle.load(f)
 
 policy_only = CategoricalMLPPolicy(

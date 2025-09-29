@@ -102,14 +102,14 @@ def select_missions_and_vocab(env):
 
 def main():
 
-    env_name = "PutNextLocal"
+    env_name = "OpenDoorsOrder"
     room_size=7
     num_dists=10
-    max_steps=800
-    delta_theta=1
+    max_steps=600
+    delta_theta=0.3
     num_workers=4
     num_batches=50
-    meta_batch_size=45
+    # meta_batch_size=45
 
 
 

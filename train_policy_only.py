@@ -109,11 +109,10 @@ def select_missions_and_vocab(env):
 
 def main():
 
-    env_name = "GoToLocal"
+    env_name = "ActionObjDoor"
     room_size=7
     num_dists=3
-    max_steps=300
-    delta_theta=1
+    max_steps=500
     num_workers=4
     num_batches = 50
     # meta_batch_size=25
@@ -136,8 +135,7 @@ def main():
     env = make_env()
     model = env_name
     print(f"Using environment: {env_name}\n"
-          f"room_size: {room_size}  num_dists: {num_dists}  max_steps: {max_steps}  "
-          f"delta_theta: {delta_theta}")
+          f"room_size: {room_size}  num_dists: {num_dists}  max_steps: {max_steps}")
 
     # Policy/baseline setup (replace with your actual setup)
     hidden_sizes = (64, 64)
@@ -241,10 +239,10 @@ def main():
         "policy": policy.state_dict(),
         "mission_encoder": mission_encoder.state_dict(),
         "mission_adapter": mission_adapter.state_dict()
-    }, f"ablation_policy_only/lang_policy_{model}_{room_size}_{num_dists}_{max_steps}_{delta_theta}_{num_batches}.pth")
+    }, f"ablation_policy_only/lang_policy_{model}_{room_size}_{num_dists}_{max_steps}_{num_batches}.pth")
 
     # Save the vectorizer
-    with open(f"ablation_policy_only/vectorizer_lang_{model}_{room_size}_{num_dists}_{max_steps}_{delta_theta}_{num_batches}.pkl", "wb") as f:
+    with open(f"ablation_policy_only/vectorizer_lang_{model}_{room_size}_{num_dists}_{max_steps}_{num_batches}.pkl", "wb") as f:
         pickle.dump(vectorizer, f)
 
     print("Meta-training for policy only finished")
