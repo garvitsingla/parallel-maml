@@ -64,11 +64,11 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=6
-num_dists=8
-max_steps=500
-model = "OpenDoorLoc_7_3_500"  
-delta_theta = 0.7
+room_size=9
+num_dists=9
+max_steps=350
+model = "ActionObjDoor_7_3_300"  
+delta_theta = 0.4
 num_batches = 50
 
 
@@ -83,7 +83,7 @@ num_batches = 50
 # base_env = PickupDistMissionEnv(room_size=room_size, num_dists=num_dists, max_steps=max_steps)
 # missions=PICKUP_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {m`ax_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n")
+# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n available missions: {PICKUP_MISSIONS}\n delta_theta: {delta_theta}\n")
 
 
 
@@ -111,11 +111,11 @@ num_batches = 50
 
 
 
-# OpenDoorLocMissionEnv
-base_env = OpenDoorLocMissionEnv(room_size=room_size, max_steps=max_steps)
-missions = OPEN_DOOR_MISSIONS + DOOR_LOC_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
+# # OpenDoorLocMissionEnv
+# base_env = OpenDoorLocMissionEnv(room_size=room_size, max_steps=max_steps)
+# missions = OPEN_DOOR_MISSIONS + DOOR_LOC_MISSIONS
+# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+# print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
 
 
 
@@ -136,12 +136,12 @@ print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n")
 
 
 
-# # ActionObjDoor
-# base_env = ActionObjDoorMissionEnv()
-# missions = ACTION_OBJ_DOOR_MISSIONS
-# env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print("General setup for ActionObjDoor")
-# # # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
+# ActionObjDoor
+base_env = ActionObjDoorMissionEnv()
+missions = ACTION_OBJ_DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print("General setup for ActionObjDoor")
+# # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
 
 
 

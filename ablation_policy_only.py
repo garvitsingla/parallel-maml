@@ -64,10 +64,10 @@ ACTION_OBJ_DOOR_MISSIONS = (
 
 
 room_size=9
-num_dists=9
-max_steps=300
+num_dists=3
+max_steps=350
 model = "ActionObjDoor_7_3_300"  
-delta_theta = 0.5
+delta_theta = 0.4
 num_batches = 50
 
 # # GoToLocal
@@ -151,10 +151,10 @@ print("General setup for ActionObjDoor")
 
 lang_model = torch.load(f"lang_model/lang_policy_{model}_{delta_theta}_{num_batches}.pth", map_location=device)
 with open(f"lang_model/vectorizer_lang_{model}_{delta_theta}_{num_batches}.pkl", "rb") as f:
-    vectorizer = pickle.load(f)
+    vectorizer_lang = pickle.load(f)
 
 
-SL.vectorizer = vectorizer  
+SL.vectorizer = vectorizer_lang  
 mission_encoder_output_dim = 32
 SL.mission_encoder = MissionEncoder(len(SL.vectorizer.get_feature_names_out()), 32, 64, mission_encoder_output_dim).to(device)
 SL.mission_encoder.load_state_dict(lang_model["mission_encoder"])
@@ -187,8 +187,6 @@ mission_adapter.eval()
 # Policy Only Ablation
 
 policy_only_model = torch.load(f"ablation_policy_only/lang_policy_{model}_{num_batches}.pth", map_location=device)
-with open(f"ablation_policy_only/vectorizer_lang_{model}_{num_batches}.pkl", "rb") as f:
-    vectorizer = pickle.load(f)
 
 policy_only = CategoricalMLPPolicy(
     input_size=input_size,
@@ -254,9 +252,9 @@ for i in range(N_MISSIONS):
     print(f"\nMission {i+1}/{N_MISSIONS}: '{mission}'")
 
     # 1. Lang-adapted policy
-    SL.vectorizer = vectorizer
+    SL.vectorizer = vectorizer_lang
     SL.mission_encoder = mission_encoder
-    theta_prime = get_language_adapted_params(policy_lang, mission, mission_encoder, mission_adapter, vectorizer, device)
+    theta_prime = get_language_adapted_params(policy_lang, mission, mission_encoder, mission_adapter, vectorizer_lang, device)
     lang_steps = []
     print("  [Lang-adapted policy episodes]")
     for ep in range(N_EPISODES):

@@ -9,7 +9,8 @@ from environment import (GoToLocalMissionEnv,
                          OpenDoorLocMissionEnv,
                          OpenTwoDoorsMissionEnv,
                          OpenDoorsOrderMissionEnv,
-                         ActionObjDoorMissionEnv)
+                         ActionObjDoorMissionEnv,
+                         )
 from sampler_lang import BabyAIMissionTaskWrapper, MissionEncoder, MissionParamAdapter
 import sampler_lang as SL
 from maml_rl.policies.categorical_mlp import CategoricalMLPPolicy
@@ -66,8 +67,8 @@ ACTION_OBJ_DOOR_MISSIONS = (
 room_size=7
 num_dists=12
 max_steps=500
-model = "OpenDoorsOrder_7_10_600"  
-delta_theta = 0.5
+model = "ActionObjDoor_7_3_300"  
+delta_theta = 0.4
 num_batches = 50
 
 # # GoToLocal
@@ -129,20 +130,20 @@ num_batches = 50
 
 
 
-# OpenDoorsOrder
-base_env = OpenDoorsOrderMissionEnv(room_size=room_size)
-missions = OPEN_DOORS_ORDER_MISSIONS
-env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-print(f"room_size: {room_size}\n")
-
-
-
-# # ActionObjDoor
-# base_env = ActionObjDoorMissionEnv()
-# missions = ACTION_OBJ_DOOR_MISSIONS
+# # OpenDoorsOrder
+# base_env = OpenDoorsOrderMissionEnv(room_size=room_size)
+# missions = OPEN_DOORS_ORDER_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print("General setup for ActionObjDoor")
-# # # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
+# print(f"room_size: {room_size}\n")
+
+
+
+# ActionObjDoor
+base_env = ActionObjDoorMissionEnv()
+missions = ACTION_OBJ_DOOR_MISSIONS
+env = BabyAIMissionTaskWrapper(base_env, missions=missions)
+print("General setup for ActionObjDoor")
+# # print(f"room_size: {room_size}  \nmax_steps: {max_steps} \n num_distractors: {num_dists} \n")
 
 
 

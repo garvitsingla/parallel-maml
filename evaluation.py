@@ -9,7 +9,8 @@ from environment import (GoToLocalMissionEnv,
                          OpenDoorLocMissionEnv,
                          OpenTwoDoorsMissionEnv,
                          OpenDoorsOrderMissionEnv,
-                         ActionObjDoorMissionEnv)
+                         ActionObjDoorMissionEnv,
+                         PutNextLocal, _aug_phrase)
 from sampler_lang import BabyAIMissionTaskWrapper, MissionEncoder, MissionParamAdapter
 import sampler_lang
 import sampler_maml
@@ -65,11 +66,18 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=7
+PUTNEXT_MISSIONS = [
+    _aug_phrase(c1, t1, c2, t2)
+    for c1 in COLORS for t1 in OBJECTS
+    for c2 in COLORS for t2 in OBJECTS
+    if not (c1 == c2 and t1 == t2)]
+
+
+room_size=10
 num_dists=9
-max_steps=20
-model = "PutNextLocal_7_10_800"  
-delta_theta = 1
+max_steps=1000
+model = "ActionObjDoor_7_3_300"  
+delta_theta = 0.4
 num_batches = 50
 
 # # GoToLocal
@@ -148,11 +156,11 @@ print("General setup for ActionObjDoor")
 
 
 
-# Open
-# base_env = OpenMissionEnv(room_size=room_size,num_rows=num_rows, num_cols=num_cols, num_dists=num_dists, max_steps=max_steps)
-# missions=OPEN_DOOR_MISSIONS
+# # PutNextLocal
+# base_env = PutNextLocal(room_size=room_size, max_steps = max_steps)
+# missions = PUTNEXT_MISSIONS
 # env = BabyAIMissionTaskWrapper(base_env, missions=missions)
-# print(f"room_size: {room_size}\n num_dists: {num_dists}\n max_steps: {max_steps}\n  num_rows: {num_rows}\n num_cols: {num_cols}\n model used: {model}")
+# print(f"room_size: {room_size}\n")
 
 
 

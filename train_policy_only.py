@@ -108,14 +108,14 @@ def select_missions_and_vocab(env):
 
 
 def main():
-
+    
     env_name = "ActionObjDoor"
     room_size=7
     num_dists=3
-    max_steps=500
+    max_steps=300
     num_workers=4
-    num_batches = 50
-    # meta_batch_size=25
+    num_batches=50
+    # meta_batch_size=45
 
 
 
