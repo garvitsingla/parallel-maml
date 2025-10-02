@@ -62,7 +62,7 @@ def build_env(env, room_size, num_dists, max_steps, missions):
     elif env == "OpenDoorsOrder":
         base = OpenDoorsOrderMissionEnv(room_size=room_size)
     elif env == "ActionObjDoor":
-        base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None)
+        base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None, num_dists=num_dists)
     elif env == "PutNextLocal":
         base = PutNextLocalMissionEnv(room_size=room_size, max_steps=max_steps, num_dists=None)
     else:
@@ -99,13 +99,13 @@ def select_missions_and_vocab(env):
 
 def main():
     
-    env_name = "PutNextLocal"
+    env_name = "ActionObjDoor"
     room_size=7
-    num_dists=10
-    max_steps=800
+    num_dists=5
+    max_steps=300
     num_workers=4
     num_batches=50
-    meta_batch_size=45
+    # meta_batch_size=45
 
 
     missions, vocabs = select_missions_and_vocab(env_name)

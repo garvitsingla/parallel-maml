@@ -64,11 +64,11 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=9
-num_dists=9
+room_size=7
+num_dists=3
 max_steps=350
 model = "ActionObjDoor_7_3_300"  
-delta_theta = 0.4
+delta_theta = 0.9
 num_batches = 50
 
 
@@ -137,7 +137,7 @@ num_batches = 50
 
 
 # ActionObjDoor
-base_env = ActionObjDoorMissionEnv()
+base_env = ActionObjDoorMissionEnv(num_dists=num_dists)
 missions = ACTION_OBJ_DOOR_MISSIONS
 env = BabyAIMissionTaskWrapper(base_env, missions=missions)
 print("General setup for ActionObjDoor")

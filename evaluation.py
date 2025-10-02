@@ -73,11 +73,11 @@ PUTNEXT_MISSIONS = [
     if not (c1 == c2 and t1 == t2)]
 
 
-room_size=10
-num_dists=9
-max_steps=1000
+room_size=7
+num_dists=3
+max_steps=350
 model = "ActionObjDoor_7_3_300"  
-delta_theta = 0.4
+delta_theta = 0.9
 num_batches = 50
 
 # # GoToLocal
@@ -148,7 +148,7 @@ num_batches = 50
 
 
 # ActionObjDoor
-base_env = ActionObjDoorMissionEnv()
+base_env = ActionObjDoorMissionEnv(num_dists=num_dists)
 missions = ACTION_OBJ_DOOR_MISSIONS
 env = BabyAIMissionTaskWrapper(base_env, missions=missions)
 print("General setup for ActionObjDoor")
@@ -257,10 +257,7 @@ def get_language_adapted_params(policy, mission_str, mission_encoder, mission_ad
         (name, param + delta.squeeze(0))
         for name, param, delta in zip(param_names, policy_params, delta_thetas)
     )
-    # theta_prime = OrderedDict(
-    #     (name, param)
-    #     for name, param in zip(param_names, policy_params)
-    # )
+
     return theta_prime
 
 

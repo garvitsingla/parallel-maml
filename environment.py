@@ -665,7 +665,7 @@ class OpenDoorsOrderMissionEnv(Open):
 
 
 class ActionObjDoorMissionEnv(ActionObjDoor):
-    def __init__(self, objects=None, obj_colors=None, door_colors=None, **kwargs):
+    def __init__(self, objects=None, obj_colors=None, door_colors=None, num_dists = 3, **kwargs):
         self._forced_mission = None
         super().__init__(**kwargs)
         # self.render_mode = kwargs.get('render_mode', 'human')
@@ -673,6 +673,7 @@ class ActionObjDoorMissionEnv(ActionObjDoor):
         self.objects     = objects     if objects     is not None else OBJECTS
         self.obj_colors  = obj_colors  if obj_colors  is not None else COLORS
         self.door_colors = door_colors if door_colors is not None else COLORS
+        self.num_dists = num_dists
 
     def set_forced_mission(self, mission):
         self._forced_mission = mission
@@ -730,7 +731,7 @@ class ActionObjDoorMissionEnv(ActionObjDoor):
                     pass
 
             # add distractors
-            for _ in range(3):
+            for _ in range(self.num_dists):
                 k = self._rand_elem(self.objects)
                 c = self._rand_elem([x for x in self.obj_colors if not (k == target_kind and x == target_color)])
                 try:
@@ -771,7 +772,7 @@ class ActionObjDoorMissionEnv(ActionObjDoor):
                         doors.append(d)
                     except Exception:
                         pass
-                for _ in range(3):
+                for _ in range(self.num_dists):
                     k = self._rand_elem(self.objects)
                     c = self._rand_elem([x for x in self.obj_colors if not (k == otype and x == color)])
                     try:
@@ -786,7 +787,7 @@ class ActionObjDoorMissionEnv(ActionObjDoor):
         self.mission = self.instrs.surface(self)
         self.check_objs_reachable()
 
-
+        
 
 class PutNextLocalMissionEnv(PutNextLocal):
 

@@ -65,7 +65,7 @@ def build_env(env, room_size, num_dists, max_steps, missions):
     elif env == "OpenDoorsOrder":
         base = OpenDoorsOrderMissionEnv(room_size=room_size)
     elif env == "ActionObjDoor":
-        base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None)
+        base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None, num_dists=num_dists)
     elif env == "PutNextLocal":
         base = PutNextLocalMissionEnv(room_size=room_size, max_steps=max_steps, num_dists=None)
     else:
@@ -106,10 +106,10 @@ def main():
     room_size=7
     num_dists=3
     max_steps=300
-    delta_theta=0.4
+    delta_theta=0.9
     num_workers=4
     num_batches=50
-    # meta_batch_size=45
+    # meta_batch_size=15
 
 
 
@@ -343,7 +343,7 @@ def main():
     plt.plot(avg_steps_per_batch)
     plt.xlabel("meta-iteration")
     plt.ylabel("Average steps")
-    plt.title(f"language adapted_{model}_{room_size}_{num_dists}_{max_steps}_{num_workers}_{num_batches}")
+    plt.title(f"language adapted_{model}_{room_size}_{num_dists}_{max_steps}_{delta_theta}_{num_batches}")
     plt.show()
 
     pass

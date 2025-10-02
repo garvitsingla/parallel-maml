@@ -63,11 +63,11 @@ ACTION_OBJ_DOOR_MISSIONS = (
 )
 
 
-room_size=9
+room_size=7
 num_dists=3
 max_steps=350
 model = "ActionObjDoor_7_3_300"  
-delta_theta = 0.4
+delta_theta = 0.9
 num_batches = 50
 
 # # GoToLocal

@@ -72,7 +72,7 @@ def build_env(env, room_size, num_dists, max_steps, missions):
     elif env == "OpenDoorsOrder":
         base = OpenDoorsOrderMissionEnv(room_size=room_size)
     elif env == "ActionObjDoor":
-        base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None)
+        base = ActionObjDoorMissionEnv(objects=None, door_colors=None, obj_colors=None, num_dists=num_dists)
     # elif env == "PutNextLocal":
     #     base = PutNextLocalMissionEnv(room_size=room_size, max_steps=max_steps, num_dists=None)
     else:
